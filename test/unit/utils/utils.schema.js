@@ -6,59 +6,48 @@ describe('Schema utilities', function() {
   describe('`normalizeAttributes`', function() {
 
     describe('with shorthand attributes', function() {
-      var attributes;
+      it('should add type parameter to attributes', function() {
+        var attributes = {first_name: 'STRING', last_name: 'STRING'};
+        var expected = {first_name: {type: 'string'}, last_name: {type: 'string'}};
+        var result = utils.normalizeAttributes(attributes);
+        assert.deepEqual(result, expected);
+      });
 
-      before(function() {
-        attributes = {
-          first_name: 'STRING',
-          last_name: 'STRING'
+      it('should ignore functions', function() {
+        var attributes = {
+          prop: function() { return "ignored"; },
+          val: 'integer'
         };
-
-        attributes = utils.normalizeAttributes(attributes);
+        var expected = {val: {type: 'integer'}};
+        var result = utils.normalizeAttributes(attributes);
+        assert.deepEqual(result, expected);
       });
 
-      it('should normalize attributes to objects', function() {
-        assert(typeof attributes.first_name === 'object');
-        assert(typeof attributes.last_name === 'object');
+      it('should lowercase attribute type', function() {
+        var attributes = { val: 'TYPE'};
+        var expected = {val : {type: 'type'}};
+        var result = utils.normalizeAttributes(attributes);
+        assert.deepEqual(result, expected);
       });
 
-      it('should lowercase attribute types', function() {
-        assert(attributes.first_name.type === 'string');
-        assert(attributes.last_name.type === 'string');
-      });
-    });
-
-    describe('with object attributes', function() {
-      var attributes;
-
-      before(function() {
-        attributes = {
-          first_name: {
-            type: 'STRING',
-            required: true
-          },
-          last_name: {
-            type: 'STRING',
-            required: false
-          }
-        };
-
-        attributes = utils.normalizeAttributes(attributes);
+      it('should lowercase collection property', function() {
+        var attributes = {name: {
+          type: 'string',
+          collection: 'PANDAS'
+        }};
+        var expected = { name: { type: 'string', collection: 'pandas'}};
+        var result = utils.normalizeAttributes(attributes);
+        assert.deepEqual(result, expected);
       });
 
-      it('should normalize attributes to objects', function() {
-        assert(typeof attributes.first_name === 'object');
-        assert(typeof attributes.last_name === 'object');
-      });
-
-      it('should retain other properties', function() {
-        assert(typeof attributes.first_name.required !== 'undefined');
-        assert(typeof attributes.last_name.required !== 'undefined');
-      });
-
-      it('should lowercase attribute types', function() {
-        assert(attributes.first_name.type === 'string');
-        assert(attributes.last_name.type === 'string');
+      it('should lowercase model name', function() {
+        var attributes = {name: {
+          type: 'string',
+          model: 'Person'
+        }};
+        var expected = { name: {type: 'string', model: 'person'}};
+        var result = utils.normalizeAttributes(attributes);
+        assert.deepEqual(result, expected);
       });
     });
   });
